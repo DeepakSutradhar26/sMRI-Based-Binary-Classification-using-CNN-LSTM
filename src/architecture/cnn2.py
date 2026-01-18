@@ -1,8 +1,6 @@
 import torch
 import torch.nn as nn
 
-import SE
-
 class CNNArchitecture(nn.Module):
     def __init__(self, input_shape=(128, 128, 32)):
         super().__init__()

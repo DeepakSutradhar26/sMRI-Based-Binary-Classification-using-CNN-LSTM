@@ -20,9 +20,11 @@ class CNNArchitecture(nn.Module):
             D, H, W = D // 2, H // 2, W // 2
         self.flat_dim = 128 * D * H * W
 
+        self.flatten_dim = 128
+
         self.final_layer = nn.Sequential(
-            nn.Linear(self.flat_dim, 64),
-            nn.BatchNorm1d(64),
+            nn.Linear(self.flat_dim, self.flatten_dim),
+            nn.BatchNorm1d(self.flatten_dim),
             nn.ReLU(),
         )
 
