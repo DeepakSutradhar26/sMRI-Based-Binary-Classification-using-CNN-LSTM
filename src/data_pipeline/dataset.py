@@ -18,6 +18,8 @@ class MRIDataset(Dataset):
 
         volumes = []
         for nii in nii_files:
+            if nii.endswith("seg.nii"):
+                continue
             nii_path = os.path.join(patient_path, nii)
             img = nib.load(nii_path)
             data = img.get_fdata()
