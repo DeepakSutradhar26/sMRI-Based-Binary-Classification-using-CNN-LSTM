@@ -69,10 +69,29 @@ def plot_accuracy_curve(train_loss, val_loss, name):
     plt.legend()
     plt.tight_layout()
 
-    plt.savefig(f"{name} loss_curve.png", dpi=300)
+    plt.savefig(f"{name}_loss_curve.png", dpi=300)
     plt.close()
 
-def train_cnn_model(model, name):
+def plot_all_accuracy(all_train_losses, all_val_losses):
+    model_names = ["CNN1", "CNN2", "CNN3"]
+    colors = ["blue", "green", "orange"]
+
+    plt.figure(figsize=(10,6))
+
+    for train_losses, val_losses, name, color in zip(all_train_losses, all_val_losses, model_names, colors):
+        plt.plot(train_losses, color = color, linewidth=2, label=f"{name} Train")
+        plt.plot(val_losses, color=color, linestyle="--",linewidth=2, label=f"{name} Val")
+
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.title("Loss Curve Comparison (All Models)")
+    plt.legend()
+    plt.tight_layout()
+
+    plt.savefig("all_models_loss_curve.png", dpi=300)
+    plt.close()
+
+def train_cnn_model(model, name, all_train_losses, all_val_losses):
     optimizer = NAdam(model.parameters(), lr=config.LEARNING_RATE)
     criterion = nn.BCELoss()
 
@@ -96,17 +115,23 @@ def train_cnn_model(model, name):
         print(
             f"Train Loss : {train_loss:.2f} | Val Loss : {val_loss:.2f} | Accuracy : {val_acc:.2f}"
         )
-
+    
     plot_accuracy_curve(train_losses, val_losses, name)
+    all_train_losses.append(train_losses)
+    all_val_losses.append(val_losses)
 
 def main():
-    model1 = CNN_LSTM(CNN1).to(config.DEVICE)
-    train_cnn_model(model1, "CNN1")
-    model2 = CNN_LSTM(CNN2).to(config.DEVICE)
-    train_cnn_model(model2, "CNN2")
-    model3 = CNN_LSTM(CNN3).to(config.DEVICE)
-    train_cnn_model(model3, "CNN3")
+    all_train_losses = []
+    all_val_losses = []
 
+    model1 = CNN_LSTM(CNN1).to(config.DEVICE)
+    train_cnn_model(model1, "CNN1", all_train_losses, all_val_losses)
+    model2 = CNN_LSTM(CNN2).to(config.DEVICE)
+    train_cnn_model(model2, "CNN2", all_train_losses, all_val_losses)
+    model3 = CNN_LSTM(CNN3).to(config.DEVICE)
+    train_cnn_model(model3, "CNN3", all_train_losses, all_val_losses)
+
+    plot_all_accuracy(all_train_losses, all_val_losses)
 
 if __name__ == "__main__":
     main()
