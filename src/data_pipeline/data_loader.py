@@ -1,7 +1,7 @@
 from torch.utils.data import DataLoader
 from data_pipeline.dataset import MRIDataset
 from sklearn.model_selection import train_test_split
-import metrics
+import config
 import os
 
 import data_dowload
@@ -21,16 +21,16 @@ train_ids, test_ids = train_test_split(
 
 train_loader = DataLoader(
     MRIDataset(train_ids),
-    batch_size = metrics.BATCH_SIZE,
-    num_workers = metrics.NUM_WORKERS,
+    batch_size = config.BATCH_SIZE,
+    num_workers = config.NUM_WORKERS,
     shuffle = True,
     pin_memory = True,
 )
 
-test_loader = DataLoader(
+val_loader = DataLoader(
     MRIDataset(test_ids),
-    batch_size = metrics.BATCH_SIZE,
-    num_workers = metrics.NUM_WORKERS,
+    batch_size = config.BATCH_SIZE,
+    num_workers = config.NUM_WORKERS,
     shuffle = True,
     pin_memory = True,
 )

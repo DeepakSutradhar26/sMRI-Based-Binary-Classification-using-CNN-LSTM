@@ -32,4 +32,3 @@ class MRIDataset(Dataset):
         y = torch.tensor(label).unsqueeze(0)
 
         return x, y
-
