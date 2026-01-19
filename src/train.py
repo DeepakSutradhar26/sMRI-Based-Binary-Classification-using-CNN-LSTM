@@ -9,6 +9,12 @@ from models.CNN_LSTM import CNN_LSTM
 from architecture.cnn3 import CNNArchitecture
 from data_pipeline.data_loader import train_loader, val_loader
 
+def create_one_batch(x, index):
+    batch = []
+    for i in range(x.shape[0]):
+        batch.append(x[i][index])
+    return torch.tensor(batch)
+
 def train_one_epoch(model, loader, optimizer, criterion):
     model.train()
     epoch_loss = 0.0
@@ -17,15 +23,20 @@ def train_one_epoch(model, loader, optimizer, criterion):
         x = x.to(config.DEVICE)
         y = y.to(config.DEVICE)
 
-        optimizer.zero_grad()
-        preds = model(x)
-        loss = criterion(preds, y)
-        loss.backward()
-        optimizer.step()
+        for i in range(x.shape[1]):
+            batch = create_one_batch(x, i)
 
-        epoch_loss += loss.item()
+            print(batch.shape)
 
-    return epoch_loss/len(loader)
+            optimizer.zero_grad()
+            preds = model(batch)
+            loss = criterion(preds, y)
+            loss.backward()
+            optimizer.step()
+
+            epoch_loss += loss.item()
+
+    return epoch_loss/(x.shape[0] * x.shape[1])
 
 def validate(model, loader, criterion):
     model.eval()
@@ -35,11 +46,8 @@ def validate(model, loader, criterion):
 
     with torch.no_grad():
         for x,y in tqdm(loader, desc="Validation", leave=False):
-            x = x.to(config.DEVICE)
-            y = y.to(config.DEVICE)
-
-            print(x.shape) 
-            print(y.shape)
+            x = x.to(config.DEVICE) #[8, 5, 1, 128, 128, 32]
+            y = y.to(config.DEVICE) #[8, 1]
 
             preds = model(x)
             loss = criterion(preds, y)
