@@ -2,13 +2,13 @@ import torch
 import torch.nn as nn
 from torch.optim import Adam
 import matplotlib.pyplot as plt
-import tqdm
+from tqdm import tqdm
 
 import config
 import models.CNN_LSTM as CNN_LSTM
 from data_pipeline.data_loader import train_loader, val_loader
 
-def train_one_epoch(model, loader, optimizer, criterian):
+def train_one_epoch(model, loader, optimizer, criterion):
     model.train()
     epoch_loss = 0.0
 
@@ -18,7 +18,7 @@ def train_one_epoch(model, loader, optimizer, criterian):
 
         optimizer.zero_grad()
         preds = model(x)
-        loss = criterian(preds, y)
+        loss = criterion(preds, y)
         loss.backward()
         optimizer.step()
 
@@ -26,7 +26,7 @@ def train_one_epoch(model, loader, optimizer, criterian):
 
     return epoch_loss/len(loader)
 
-def validate(model, loader, criterian):
+def validate(model, loader, criterion):
     model.eval()
     epoch_loss = 0.0
     correct = 0
@@ -38,14 +38,14 @@ def validate(model, loader, criterian):
             y = y.to(config.DEVICE)
 
             preds = model(x)
-            loss = criterian(preds, y)
-            epoch_loss += loss
+            loss = criterion(preds, y)
+            epoch_loss += loss.item()
 
             preds = (preds > 0.5).float()
             correct += (preds == y).sum().item()
-            total += y.size(0)
+            total += y.numel()
     
-    acc = correct/total if total > 0 else acc = 0
+    acc = correct/total if total > 0 else 0
     return epoch_loss/len(loader), acc
 
 def plot_accuracy_curve(train_loss, val_loss):
@@ -61,30 +61,30 @@ def plot_accuracy_curve(train_loss, val_loss):
 def main():
     model = CNN_LSTM().to(config.DEVICE)
     optimizer = Adam(model.parameters(), lr=config.LEARNING_RATE)
-    criterian = nn.BCELoss()
+    criterion = nn.BCELoss()
 
-    train_loss = []
-    val_loss = []
+    train_losses = []
+    val_losses = []
 
     for epoch in range(config.N_EPOCHS):
         print(f"\nEpoch {epoch+1}/{config.N_EPOCHS}")
 
         train_loss = train_one_epoch(
-            model, train_loader, optimizer, criterian
+            model, train_loader, optimizer, criterion
         )
 
-        val_loss, val_acc = train_one_epoch(
-            model, val_loader, criterian
+        val_loss, val_acc = validate(
+            model, val_loader, criterion
         )
 
-        train_loss.append(train_loss)
-        val_loss.append(val_loss)
+        train_losses.append(train_loss)
+        val_losses.append(val_loss)
 
         print(
             f"Train Loss : {train_loss:.2f} | Val Loss : {val_loss:.2f} | Accuracy : {val_acc:.2f}"
         )
 
-    plot_accuracy_curve(train_loss, val_loss)
+    plot_accuracy_curve(train_losses, val_losses)
 
 
 if __name__ == "__main__":
