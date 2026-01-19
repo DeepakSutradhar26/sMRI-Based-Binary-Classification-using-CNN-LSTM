@@ -19,8 +19,6 @@ def train_one_epoch(model, loader, optimizer, criterion):
 
         optimizer.zero_grad()
 
-        num_steps += 1
-
         preds = model(x)
         loss = criterion(preds, y)
         loss.backward()
