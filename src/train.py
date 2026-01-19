@@ -1,12 +1,14 @@
 import torch
 import torch.nn as nn
-from torch.optim import Adam
+from torch.optim import NAdam
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 import config
 from models.CNN_LSTM import CNN_LSTM
-from architecture.cnn3 import CNNArchitecture
+from architecture.cnn1 import CNNArchitecture as CNN1
+from architecture.cnn2 import CNNArchitecture as CNN2
+from architecture.cnn3 import CNNArchitecture as CNN3
 from data_pipeline.data_loader import train_loader, val_loader
 
 def train_one_epoch(model, loader, optimizer, criterion):
@@ -57,19 +59,21 @@ def validate(model, loader, criterion):
     acc = correct/total if total > 0 else 0
     return epoch_loss/len(loader) if len(loader) > 0 else 0, acc
 
-def plot_accuracy_curve(train_loss, val_loss):
-    plt.figure()
+def plot_accuracy_curve(train_loss, val_loss, name):
+    plt.figure(figsize=(8,5))
     plt.plot(train_loss, label="Train Loss")
     plt.plot(val_loss, label="Validation Loss")
     plt.xlabel("Epoch")
     plt.ylabel("Loss")
     plt.title("Loss Decreasing Over Time")
     plt.legend()
-    plt.show()
+    plt.tight_layout()
 
-def main():
-    model = CNN_LSTM(CNNArchitecture).to(config.DEVICE)
-    optimizer = Adam(model.parameters(), lr=config.LEARNING_RATE)
+    plt.savefig(f"{name} loss_curve.png", dpi=300)
+    plt.close()
+
+def train_cnn_model(model, name):
+    optimizer = NAdam(model.parameters(), lr=config.LEARNING_RATE)
     criterion = nn.BCELoss()
 
     train_losses = []
@@ -93,7 +97,15 @@ def main():
             f"Train Loss : {train_loss:.2f} | Val Loss : {val_loss:.2f} | Accuracy : {val_acc:.2f}"
         )
 
-    plot_accuracy_curve(train_losses, val_losses)
+    plot_accuracy_curve(train_losses, val_losses, name)
+
+def main():
+    model1 = CNN_LSTM(CNN1).to(config.DEVICE)
+    train_cnn_model(model1, "CNN1")
+    model2 = CNN_LSTM(CNN2).to(config.DEVICE)
+    train_cnn_model(model2, "CNN2")
+    model3 = CNN_LSTM(CNN3).to(config.DEVICE)
+    train_cnn_model(model3, "CNN3")
 
 
 if __name__ == "__main__":

@@ -16,7 +16,7 @@ class SEBlock(nn.Module):
         return x * self.se_layer(x)
 
 class CNNArchitecture(nn.Module):
-    def __init__(self, input_shape=(1, 128, 128, 32)):
+    def __init__(self, input_shape=(1, 128, 128, 64)):
         super().__init__()
 
         self.conv_blocks = nn.Sequential(

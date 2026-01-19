@@ -1,6 +1,6 @@
 from scipy.ndimage import zoom
 
-MID_PART = 32
+MID_PART = 64
 
 def normalize_data(data):
     min_val = data.min()
