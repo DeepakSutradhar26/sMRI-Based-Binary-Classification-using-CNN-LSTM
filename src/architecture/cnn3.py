@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 class SEBlock(nn.Module):
-    def __init__(self, in_channels, reduction=16):
+    def __init__(self, in_channels, reduction=4):
         super().__init__()
         self.se_layer = nn.Sequential(
             nn.AdaptiveAvgPool3d(1),
