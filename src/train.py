@@ -39,8 +39,10 @@ def validate(model, loader, criterion):
 
     with torch.no_grad():
         for x,y in tqdm(loader, desc="Validation", leave=False):
-            x = x.to(config.DEVICE) #[8, 5, 1, 128, 128, 32]
+            x = x.to(config.DEVICE) #[8, 4, 1, 128, 128, 32]
             y = y.to(config.DEVICE) #[8, 1]
+
+            print(x.shape)
 
             preds_over_time = []
 
