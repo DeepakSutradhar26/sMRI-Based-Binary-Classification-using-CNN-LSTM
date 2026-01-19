@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 class SEBlock(nn.Module):
-    def __init__(self, in_channels, reduction=4):
+    def __init__(self, in_channels, reduction=8):
         super().__init__()
         self.se_layer = nn.Sequential(
             nn.AdaptiveAvgPool3d(1),
@@ -21,10 +21,10 @@ class CNNArchitecture(nn.Module):
 
         self.conv_blocks = nn.Sequential(
             self.conv_block(1, 8),
-            self.conv_block(8, 16),
-            self.conv_block(16, 32),
-            self.conv_block(32, 64),
-            self.conv_block(64, 128),
+            self.conv_block1(8, 16),
+            self.conv_block1(16, 32),
+            self.conv_block1(32, 64),
+            self.conv_block1(64, 128),
         )
 
         _, H, W, D = input_shape
@@ -42,6 +42,19 @@ class CNNArchitecture(nn.Module):
 
     
     def conv_block(self, in_channels, out_channels):
+        return nn.Sequential(
+            nn.Conv3d(in_channels, out_channels, kernel_size=3, padding=1),
+            nn.BatchNorm3d(out_channels),
+            nn.ReLU(inplace=True),
+
+            nn.Conv3d(out_channels, out_channels, kernel_size=3, padding=1),
+            nn.BatchNorm3d(out_channels),
+            nn.ReLU(inplace=True),
+
+            nn.MaxPool3d(kernel_size=2, stride=2),
+        )
+    
+    def conv_block1(self, in_channels, out_channels):
         return nn.Sequential(
             nn.Conv3d(in_channels, out_channels, kernel_size=3, padding=1),
             nn.BatchNorm3d(out_channels),
