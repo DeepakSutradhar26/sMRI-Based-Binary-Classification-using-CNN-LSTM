@@ -1,5 +1,5 @@
 from torch.utils.data import DataLoader
-from data_pipeline.dataset import MRIDataset
+from dataset import MRIDataset
 from sklearn.model_selection import train_test_split
 import config
 import os
