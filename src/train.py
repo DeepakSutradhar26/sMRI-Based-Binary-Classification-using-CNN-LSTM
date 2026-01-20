@@ -11,7 +11,7 @@ from architecture.cnn2 import CNNArchitecture as CNN2
 from architecture.cnn3 import CNNArchitecture as CNN3
 from data_pipeline.data_loader import train_loader, val_loader
 
-def train_one_epoch(model, loader, optimizer, criterion):
+def train_one_epoch(model, loader, optimizer, criterion, scaler):
     model.train()
     epoch_loss = 0.0
 
@@ -19,16 +19,21 @@ def train_one_epoch(model, loader, optimizer, criterion):
         x = x.to(config.DEVICE)
         y = y.to(config.DEVICE)
 
-        optimizer.zero_grad()
+        optimizer.zero_grad(set_to_none=True)
 
-        preds = model(x)
-        loss = criterion(preds, y)
-        loss.backward()
+        with torch.cuda.amp.autocast():
+           preds = model(x)
+           loss = criterion(preds, y)
+        
+        scaler.scale(loss).backward()
+        scaler.step(optimizer)
+        scaler.update()
 
         epoch_loss += loss.item()
 
-        optimizer.step()
+        del preds, loss
 
+    torch.cuda.empty_cache()
     return epoch_loss/len(loader) if len(loader) > 0 else 0
 
 def validate(model, loader, criterion):
@@ -123,6 +128,7 @@ def plot_all_accuracy(all_acc):
 def train_cnn_model(model, name, all_train_losses, all_val_losses, all_acc):
     optimizer = NAdam(model.parameters(), lr=config.LEARNING_RATE, weight_decay=config.WEIGHT_DECAY)
     criterion = nn.BCEWithLogitsLoss()
+    scaler = torch.cuda.amp.GradScaler()
 
     train_losses = []
     val_losses = []
@@ -132,7 +138,7 @@ def train_cnn_model(model, name, all_train_losses, all_val_losses, all_acc):
         print(f"\nEpoch {epoch+1}/{config.N_EPOCHS}")
 
         train_loss = train_one_epoch(
-            model, train_loader, optimizer, criterion
+            model, train_loader, optimizer, criterion, scaler
         )
 
         val_loss, val_acc = validate(
