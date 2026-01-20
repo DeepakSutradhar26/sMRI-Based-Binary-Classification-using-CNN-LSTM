@@ -151,6 +151,17 @@ def train_cnn_model(model, name, all_train_losses, all_val_losses, all_acc):
     plot_accuracy_curve(acc, name)
     all_train_losses.append(train_losses)
     all_val_losses.append(val_losses)
+    all_acc.append(acc)
+
+    return optimizer
+
+def reset_torch(model, optimizer):
+    if model is not None:
+        del model
+    if optimizer is not None:
+        del optimizer
+    torch.cuda.empty_cache()
+    torch.cuda.reset_peak_memory_stats()
 
 def main():
     all_train_losses = []
@@ -158,11 +169,16 @@ def main():
     all_acc = []
 
     model1 = CNN_LSTM(CNN1).to(config.DEVICE)
-    train_cnn_model(model1, "CNN1", all_train_losses, all_val_losses, all_acc)
+    op1 = train_cnn_model(model1, "CNN1", all_train_losses, all_val_losses, all_acc)
+    reset_torch(model1, op1)
+
     model2 = CNN_LSTM(CNN2).to(config.DEVICE)
-    train_cnn_model(model2, "CNN2", all_train_losses, all_val_losses, all_acc)
+    op2 = train_cnn_model(model2, "CNN2", all_train_losses, all_val_losses, all_acc)
+    reset_torch(model2, op2)
+
     model3 = CNN_LSTM(CNN3).to(config.DEVICE)
-    train_cnn_model(model3, "CNN3", all_train_losses, all_val_losses, all_acc)
+    op3 = train_cnn_model(model3, "CNN3", all_train_losses, all_val_losses, all_acc)
+    reset_torch(model3, op3)
 
     plot_all_loss(all_train_losses, all_val_losses)
     plot_all_accuracy(all_acc)
