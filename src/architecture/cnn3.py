@@ -26,19 +26,7 @@ class CNNArchitecture(nn.Module):
             self.conv_block1(64, 128),
         )
 
-        _, H, W, D = input_shape
-        for i in range(5):
-            H, W, D = H // 2, W // 2, D // 2
-        self.flat_dim = 128 * D * H * W
-
-        self.flatten_dim = 128
-
-        self.final_layer = nn.Sequential(
-            nn.Linear(self.flat_dim, self.flatten_dim),
-            nn.BatchNorm1d(self.flatten_dim),
-            nn.ReLU(),
-        )
-
+        self.final_layer = nn.AdaptiveAvgPool3d(1)
     
     def conv_block(self, in_channels, out_channels):
         return nn.Sequential(
@@ -59,6 +47,6 @@ class CNNArchitecture(nn.Module):
     
     def forward(self, x):
         x = self.conv_blocks(x)
-        x = torch.flatten(x, start_dim=1) #(batch_size, 128, 1, 4, 4) -> (batch_size, 2048)
         x = self.final_layer(x) 
+        x = x.flatten(dim=1)
         return x 
