@@ -19,6 +19,8 @@ def train_one_epoch(model, loader, optimizer, criterion):
         x = x.to(config.DEVICE)
         y = y.to(config.DEVICE)
 
+        print(x.shape)
+
         optimizer.zero_grad()
 
         preds = model(x)
